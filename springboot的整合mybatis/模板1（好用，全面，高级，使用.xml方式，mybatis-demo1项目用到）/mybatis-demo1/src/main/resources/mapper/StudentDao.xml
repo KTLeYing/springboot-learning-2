@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mzl.mybatisdemo1.dao.StudentDao">
+
+    <!--配置属性与列名匹配映射-->
+    <resultMap id="BaseResultMap" type="com.mzl.mybatisdemo1.entity.Student">
+        <id property="id" column="id"/>
+        <result property="departmentId" column="department_id"/>
+        <result property="name" column="name"/>
+        <result property="sex" column="sex"/>
+        <result property="age" column="age"/>
+        <result property="clazz" column="class"/>
+        <result property="phone" column="phone"/>
+        <result property="address" column="address"/>
+    </resultMap>
+
+    <!--一对一-->
+    <resultMap id="BaseResultMap1" type="com.mzl.mybatisdemo1.entity.Student">
+        <id property="id" column="id"/>
+        <result property="departmentId" column="department_id"/>
+        <result property="name" column="name"/>
+        <result property="sex" column="sex"/>
+        <result property="age" column="age"/>
+        <result property="clazz" column="class"/>
+        <result property="phone" column="phone"/>
+        <result property="address" column="address"/>
+        <!--关联子表-->
+        <association property="department" javaType="com.mzl.mybatisdemo1.entity.Department">
+            <id property="id" column="did"/>
+            <result property="departmentName" column="department_name"/>
+            <result property="dean" column="dean"/>
+            <result property="hasYears" column="has_years"/>
+            <result property="location" column="location"/>
+        </association>
+    </resultMap>
+
+    <!--通用的查询列名(student)-->
+    <sql id="Base_Column_List">
+       id, department_id, name, sex, age, class, phone, address
+    </sql>
+
+    <!--通过id查询学生-->
+    <select id="findById" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List"/> from student
+        where id = #{id}
+    </select>
+
+    <!--通过班级查询学生-->
+    <select id="findStuByClazz" resultMap="BaseResultMap">
+        select * from student
+        where class like #{clazz}
+    </select>
+
+    <!--查询所有学生信息及其对应的学院信息（一对一）-->
+    <select id="findStuInfo" resultMap="BaseResultMap1">
+        select s.*, d.id as did, d.department_name, d.dean, d.has_years, d.location from student s, department d
+        where s.department_id = d.id
+    </select>
+
+    <!--模糊查询，根据学生姓名和班级模糊查询（where-if）-->
+    <select id="findStuByNameAndClass" resultMap="BaseResultMap">
+        select * from student
+        <where>
+           <!--使用concat()和#来获取值-->
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="clazz != null and clazz != ''">
+                and class like concat('%', #{clazz}, '%')
+            </if>
+
+            <!--使用$来获取值-->
+<!--            <if test="name != null and name != ''">-->
+<!--                and name like '%${name}%'-->
+<!--            </if>-->
+<!--            <if test="clazz != null and clazz != ''">-->
+<!--                and class like '%${clazz}%'-->
+<!--            </if>-->
+
+            <!--直接使用#来获取值-->
+<!--            <if test="name != null and name != ''">-->
+<!--                and name like "%"#{name}"%"-->
+<!--            </if>-->
+<!--            <if test="clazz != null and clazz != ''">-->
+<!--                and class like "%"#{clazz}"%"-->
+<!--            </if>-->
+        </where>
+    </select>
+
+    <!--模糊查询，根据学生姓名和班级模糊查询（trim代替where-if）-->
+    <select id="findStuByNameAndClass1" resultMap="BaseResultMap">
+        select * from student
+        <trim prefix="where" prefixOverrides="and">
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="clazz != null and clazz != ''">
+                and class like concat('%', #{clazz}, '%')
+            </if>
+        </trim>
+    </select>
+
+    <!--更新学生信息（set-if）-->
+    <update id="updateStu">
+        update student
+        <set>
+            <if test="departmentId != null and departmentId != ''">
+                department_id = #{departmentId},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="sex != null and sex != ''">
+                sex = #{sex},
+            </if>
+            <if test="age != null and age != ''">
+                age = #{age},
+            </if>
+            <if test="clazz != null and clazz != ''">
+                class = #{clazz},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--更新学生信息（trim代替set-if）-->
+<!--    <update id="updateStu1">-->
+<!--        update student-->
+<!--        <trim prefix="set" suffixOverrides="," suffix="where id = #{id}">-->
+<!--            <if test="departmentId != null and departmentId != ''">-->
+<!--                department_id = #{departmentId},-->
+<!--            </if>-->
+<!--            <if test="name != null and name != ''">-->
+<!--                name = #{name},-->
+<!--            </if>-->
+<!--            <if test="sex != null and sex != ''">-->
+<!--                sex = #{sex},-->
+<!--            </if>-->
+<!--            <if test="age != null and age != ''">-->
+<!--                age = #{age},-->
+<!--            </if>-->
+<!--            <if test="clazz != null and clazz != ''">-->
+<!--                class = #{clazz},-->
+<!--            </if>-->
+<!--            <if test="phone != null and phone != ''">-->
+<!--                phone = #{phone},-->
+<!--            </if>-->
+<!--            <if test="address != null and address != ''">-->
+<!--                address = #{address},-->
+<!--            </if>-->
+<!--        </trim>-->
+<!--    </update>-->
+    <!--或-->
+    <update id="updateStu1">
+        update student
+        <trim prefix="set" suffixOverrides=",">
+            <if test="departmentId != null and departmentId != ''">
+                department_id = #{departmentId},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="sex != null and sex != ''">
+                sex = #{sex},
+            </if>
+            <if test="age != null and age != ''">
+                age = #{age},
+            </if>
+            <if test="clazz != null and clazz != ''">
+                class = #{clazz},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <!--根据id删除学生-->
+    <delete id="deleteStu">
+        delete from student
+        where id = #{id}
+    </delete>
+
+    <!--根据id删除多个学生，批量删除（where-foreach）,前端的多个值用逗号隔开，表示一个数组-->
+    <delete id="deleteMoreStu">
+        delete from student
+        <where>
+            id in
+            <!--collection也可以用list，但dao层要传list，这里是array，前端传一个a[]数组-->
+            <foreach collection="array" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </where>
+    </delete>
+
+    <!--添加学生-->
+    <insert id="addStu">
+        insert into student(department_id, name, sex, age, class, phone, address)
+        values(#{departmentId}, #{name}, #{sex}, #{age}, #{clazz}, #{phone}, #{address})
+    </insert>
+
+</mapper>

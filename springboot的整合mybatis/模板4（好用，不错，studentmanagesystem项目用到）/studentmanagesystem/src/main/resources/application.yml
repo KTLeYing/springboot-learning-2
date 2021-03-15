@@ -1,0 +1,20 @@
+#spring配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 105293
+    url: jdbc:mysql://localhost:3306/studentmanager?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+
+#mybatis配置资源
+mybatis:
+  type-aliases-package: com.mzl.studentmanagesystem.entity
+  mapper-locations: classpath:mapper/*.xml
+
+#配端口号
+server:
+  port: 8080

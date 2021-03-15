@@ -1,0 +1,43 @@
+一、关闭项目某一端口号占用的进程
+1、使用cmd命令查看端口号占用情况，例如查看端口 8014，可以看出进程号为10728；
+输入命令： netstat -ano | findstr 端口号  （netstat -ano | findstr 8014）
+然后看到：TCP   0.0.0.0:8014    0.0.0.0:0    LISTENING     10728
+2、关闭该进程
+方法一：使用任务管理器关闭：
+  菜单栏 -> 右键 - > 任务管理器 -> 详细信息，根据PID排序找到PID为10728的进程，选择后点击结束任务。
+方法二： 使用命令关闭
+  输入命令：taskkill -PID 进程号 -F  （如：taskkill -PID 10728 -F）
+（参考教程：https://blog.csdn.net/zhouky1993/article/details/103976320）
+
+
+二、springboot打包方法【.jar包，自带了Tomcat】
+在idea打开Maven的视图，点击Lifecycle，双击 clean 和 package 打包，它自动会在target目录下生成打包好的xx.jar文件。
+参考CSDN教程(按照教程步骤来即可成功)：
+1、https://blog.csdn.net/qq_33378853/article/details/88733165?utm_medium=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.add_param_isCf&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.add_param_isCf
+2、https://www.it610.com/article/1280082933897510912.htm
+
+三、application.properties文件配置多个值
+spring.redis.cluster.nodes=172.21.0.211:7000,172.21.0.211:7001,172.21.0.211:7002,172.21.0.211:7003,172.21.0.211:7004
+（某个属性有多个值使用逗号,隔开）
+
+
+四、application.yml文件配置多个值
+##哨兵
+spring:
+    redis:
+        cluster:
+             nodes:
+             - 172.21.0.211:7005
+             - 172.21.0.211:7006
+             - 172.21.0.211:7007
+（某个属性有多个值使用短横线-隔开）
+
+
+
+
+
+
+
+
+
+

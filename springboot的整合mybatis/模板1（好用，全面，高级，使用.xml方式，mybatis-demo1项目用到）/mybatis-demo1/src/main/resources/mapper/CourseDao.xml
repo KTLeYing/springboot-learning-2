@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mzl.mybatisdemo1.dao.CourseDao">
+
+    <!--多对多，其实就是一个一对多来的-->
+    <resultMap id="BaseResultMap" type="com.mzl.mybatisdemo1.entity.Course">
+        <id property="id" column="id"/>
+        <result property="courseName" column="course_name"/>
+        <result property="classHour" column="course_hour"/>
+        <result property="courseNum" column="course_num"/>
+        <result property="teacherName" column="teacher_name"/>
+        <collection property="studentList" ofType="com.mzl.mybatisdemo1.entity.Student">
+            <id property="id" column="sid"/>
+            <result property="departmentId" column="department_id"/>
+            <result property="name" column="name"/>
+            <result property="sex" column="sex"/>
+            <result property="age" column="age"/>
+            <result property="clazz" column="class"/>
+            <result property="phone" column="phone"/>
+            <result property="address" column="address"/>
+        </collection>
+    </resultMap>
+
+    <!--查询所有课程对应的所有的学生(多对多，其实就是和一对多实现是一样的，只是它有两个一对多而已)-->
+    <select id="findAllStuInCourse" resultMap="BaseResultMap">
+        select c.*, s.id as sid, s.department_id,s.name, s.sex, s.age, s.class, s.phone, s.address from course c, student s, student_course sc
+        where c.id = sc.course_id and s.id = sc.student_id
+    </select>
+
+</mapper>

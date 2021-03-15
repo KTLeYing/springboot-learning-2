@@ -1,0 +1,700 @@
+###application.properties文件配置多个值###（通用）
+spring.redis.cluster.nodes=172.21.0.211:7000,172.21.0.211:7001,172.21.0.211:7002,172.21.0.211:7003,172.21.0.211:7004
+（某个属性有多个值使用逗号,隔开）
+###application.yml文件配置多个值###（通用）
+spring:
+    redis:
+        cluster:
+             nodes:
+             - 172.21.0.211:7005
+             - 172.21.0.211:7006
+             - 172.21.0.211:7007
+（某个属性有多个值使用短横线-隔开）
+
+
+【JPA配置】----------------------【JPA配置】
+<1>（好用）
+#jpa配置
+#在控制台打印SQL语句
+spring.jpa.show-sql=true
+#自动建表策略
+spring.jpa.hibernate.ddl-auto=update
+#打开视图工具
+spring.jpa.open-in-view=true
+#数据库类型
+spring.jpa.database=mysql
+#hibernate方言
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+<2>（好用）
+spring:
+   jpa:
+      database: mysql
+      showSql: true
+      hibernate:
+         ddlAuto: update
+      properties:
+         hibernate:
+            dialect: org.hibernate.dialect.MySQL5Dialect
+            format_sql: true
+<3>
+spring:
+    jpa:
+      database: mysql
+      show-sql: true
+      hibernate:
+        ddl-auto: update
+        naming:
+          strategy: org.hibernate.cfg.DefaultComponentSafeNamingStrategy
+      properties:
+         hibernate:
+            dialect: org.hibernate.dialect.MySQL5Dialect
+<4>
+spring:
+    jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl #按字段名字建表
+    show-sql: true
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+
+
+【shiro配置】----------------------【shiro配置】
+<1>
+shiro.web.enabled=true
+shiro.loginUrl=/login
+<2>
+spring:
+    shiro:
+           conf:
+	  domain:
+	  cookiePath: /
+	  successUrl: /index
+	  loginView: /login
+	  openToken: false
+	  sessionTimeout: 1800000
+	  algorithmName: md5
+	  hashIterations: 5
+	  #不拦截的路径
+	  sysanon:
+	       - /login
+	       - /regist
+	  #跨域配置
+	  allowedOrigins:
+	       - /**
+
+
+【自带的端口号配置】----------------------【自带的端口号配置】
+server.port=8080
+
+【自带的session有效期限配置】----------------------【自带的session有效期限配置】
+server.servlet.session.timeout=1000
+
+【自带的应用名称配置】----------------------【自带的应用名称配置】
+spring.application.name=shiro-jwt-redis
+
+【mybatis配置】----------------------【mybatis配置】
+<1>（好用）
+#开启控制台打印SQL
+mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
+#mybatis下划线转驼峰配置
+mybatis.configuration.map-underscore-to-camel-case=true
+#配置扫描，在resources目录下，下面两种都可以
+mybatis.mapper-locations=classpath:mapper/*.xml
+#或
+#mybatis.mapper-locations=classpath:/mapper/*.xml
+#配置扫描，如果不在resources目录下，在java目录下
+#mybatis-mapper-locations=classpath:com/example/mybatisplusdemo1/mapper/mapping/*.xml
+
+#实体类所在的包别名
+mybatis.type-aliases-package=com.mzl.redisdemo.entity
+<2>
+#mybatis配置资源
+mybatis:
+  type-aliases-package: com.mzl.studentmanagesystem.entity
+  mapper-locations: classpath:mapper/*.xml
+#配置扫描，如果不在resources目录下，在java目录下
+#mapper-locations: classpath:com/example/mybatisplusdemo1/mapper/mapping/*.xml
+
+【mybatis-plus配置】----------------------【mybatis-plus配置】
+<1>
+##mybatis-plus mapper xml 文件地址,mapper，classpath:/xxx 和 classpath:xxx是一样的,classpath:xxx 和 classpath*:xxx是不一样的，前者表示引入一个，后者表示引入多个。
+mybatis-plus.mapper-locations=classpath:mapper/*.xml
+#或
+#mybatis-plus.mapper-locations=classpath:/mapper/*.xml
+#如果.xml文件不在resources目录下，在java目录里面
+#mybatis-plus.config-location=classpath:com/example/mybatisplusdemo1/mapper/mapping/*.xml
+
+##mybatis-plus type-aliases 文件地址,实体类包
+mybatis-plus.type-aliases-package=com.example.mybatisplusdemo1.entity
+
+##日志级别
+logging.level.com.example.mybatisplusdemo1.mapper=debug
+
+
+【PageHelper配置】----------------------【PageHelper配置】
+<1>
+pagehelper.reasonable=true
+pagehelper.support-methods-arguments=true
+pagehelper.pageSizeZero=true
+pagehelper.params=count=countSql
+
+<2>
+#pagehelper分页插件配置
+pagehelper:
+  helperDialect: postgresql #设置sql语言
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+【redis配置】----------------------【redis配置】
+<1>
+#Redis服务器地址
+spring.redis.host=127.0.0.1
+#Redis服务器连接端口
+spring.redis.port=6379
+#Redis数据库索引（默认为0）
+spring.redis.database=0  
+#连接池最大连接数（使用负值表示没有限制）
+spring.redis.jedis.pool.max-active=50
+#连接池最大阻塞等待时间（使用负值表示没有限制）
+spring.redis.jedis.pool.max-wait=3000
+#连接池中的最大空闲连接
+spring.redis.jedis.pool.max-idle=20
+#连接池中的最小空闲连接
+spring.redis.jedis.pool.min-idle=2
+#连接超时时间（毫秒）
+spring.redis.timeout=5000
+<2>（好用）
+#连接的那个数据库
+spring.redis.database=0
+#redis服务器ip地址
+#spring.redis.host=localhost
+spring.redis.host=127.0.0.1
+#redis端口号
+spring.redis.port=6379
+<3>
+spring:
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
+    timeout: 0
+<4>
+spring:
+    redis:
+            database: 0
+            host: localhost
+            port: 6379
+            password:
+            jedis:
+	  pool:
+	       max-active: 8
+	       max-wait: -1
+	       max-idle: 8
+	       min-idle: 0
+           timeout: 0
+<5>
+# REDIS (Redis 配置)
+# 连接工厂使用的数据库索引。
+spring.redis.database= 0
+# Redis服务器主机。
+spring.redis.host= localhost
+# 登录redis服务器的密码。
+spring.redis.password= 
+# 给定时间池可以分配的最大连接数。 使用负值为无限制。
+spring.redis.pool.max-active= 8
+# 池中“空闲”连接的最大数量。 使用负值来表示无限数量的空闲连接。
+spring.redis.pool.max-idle= 8
+# 连接分配在池耗尽之前在抛出异常之前应阻止的最大时间量（以毫秒为单位）。 使用负值无限期地阻止。
+spring.redis.pool.max-wait= -1
+# 定义池中维护的最小空闲连接数。 此设置只有在正值时才有效果。
+spring.redis.pool.min-idle= 0
+# redis服务器端口
+spring.redis.port= 6379
+# redis服务器名称
+spring.redis.sentinel.master=
+# 
+spring.redis.sentinel.nodes= 
+# 连接超时（毫秒）。
+spring.redis.timeout= 0
+
+【AOP配置】----------------------【AOP配置】
+<1>
+# 添加@EnableAspectJAutoProxy。
+spring.aop.auto= true
+# 是否要创建基于子类（CGLIB）的代理（true），而不是基于标准的基于Java接口的代理（false）。
+spring.aop.proxy-target-class= false
+
+【spring数据源配置】----------------------【spring数据源配置】
+<1>
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 105293
+    url: jdbc:mysql://localhost:3306/studentmanager?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+<2>
+spring.datasource.url=jdbc:mysql://localhost:3306/online-system?useUnicode=true&characterEncoding=utf-8
+spring.datasource.username=root
+spring.datasource.password=105293
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+<3>
+##数据库配置##
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://localhost:3306/nba?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+spring.datasource.username=root
+spring.datasource.password=105293
+#使用阿里巴巴数据源，默认使用自带
+spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+<4>
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 105293
+    url: jdbc:mysql://localhost:3306/studentmanager?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+<5>
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    username: root
+    password: root
+
+【thymeleaf】----------------------【thymeleaf】
+<1>（好用）
+spring:
+  thymeleaf:
+    mode: html
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+<2>（好用）
+#thymeleaf配置
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.mode=HTML
+spring.thymeleaf.prefix=classpath:templates/
+spring.thymeleaf.encoding=UTF-8
+<3>
+spring:
+  thymeleaf:
+     cache: false
+     mode: LEGACYHTML5
+     prefix: classpath:/templates/
+<4>
+spring:
+  #热部署--静态资源立即生效
+  thymeleaf:
+    cache: false
+    encoding: UTF-8
+    mode: LEGACYHTML5
+    prefix: classpath:/templates/
+    suffix: .html
+    check-template-location: true
+
+【拦截器】----------------------【拦截器】
+<1>
+#拦截静态资源
+spring:
+  mvc:
+    static-path-pattern: /static/**
+
+【freemaker】----------------------【freemaker】
+<1>（好用）
+#指定模板后缀
+spring.freemarker.suffix=.ftl
+#编码格式
+spring.freemarker.charset=UTF-8
+# 设置文档类型
+spring.freemarker.content-type=text/html
+#关闭缓存，及时刷新，上线生产环境需要修改为true
+spring.freemarker.cache=false
+#设定ftl文件路径
+spring.freemarker.template-loader-path=classpath:/templates/
+<2>（好用）
+spring:
+  freemarker:
+    # 设置模板后缀名
+    suffix: .ftl
+    # 设置文档类型
+    content-type: text/html
+    # 设置页面编码格式
+    charset: UTF-8
+    # 设置页面缓存
+    cache: false
+    # 设置ftl文件路径
+    template-loader-path: classpath:/templates
+<3>
+spring:
+   freemarker:
+    suffix: .html   #设定模板的后缀
+    request-context-attribute: request  #request访问request
+    content-type: text/html
+    enabled: true
+    cache: false   #缓存配置
+    template-loader-path: classpath:/templates/ #模板加载路径 按需配置
+    charset: UTF-8   #编码格式
+    settings:
+      number_format: '0.##'   #数字格式化，无小数点
+
+
+【RabbitMq消息队列配置】----------------------【RabbitMq消息队列配置】
+#RabbitMq配置
+spring.rabbitmq.host=localhost
+spring.rabbitmq.port=5672
+spring.rabbitmq.password=guest
+spring.rabbitmq.username=guest
+#开启ACK自动确认
+spring.rabbitmq.listener.direct.acknowledge-mode=manual
+spring.rabbitmq.listener.simple.acknowledge-mode=manual
+#  消息发送到交换机确认机制,是否确认回
+spring.rabbitmq.publisher-confirms=true
+
+
+【servlet配置】----------------------【servlet配置】
+<1>
+spring:
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+
+【devtools热部署】----------------------【devtools热部署】
+<1>（好用）
+spring.devtools.restart.enabled=true
+<2>
+spring:
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+<3>（好用）
+spring:
+  #热部署生效
+  devtools:
+    restart:
+      #这个好像是热加载，每次代码有改动就自动重启，原来的restart ClassLoader 被丢弃，重新创建一个restart
+      enabled: true
+
+【security安全配置】----------------------【security安全配置】
+（不配置则系统默认用户名为user，密码每次启动程序自动在控制台生成）
+<1>
+spring:
+  security:
+    user:
+      password: pass
+      username: mzl
+<2>
+spring.security.user.name=mzl
+spring.security.user.password=8888
+
+【debug】----------------------【debug】
+<1>
+#log
+#调试模式
+debug=true
+
+【开发环境配置】----------------------【开发环境配置】
+<1>
+spring:
+  profiles: dev
+mysql:
+  ipPort: localhost:3306
+
+【测试环境配置】----------------------【测试环境配置】
+<1>
+spring:
+  profiles: test
+mysql:
+  ipPort: ip:port
+
+【生产环境配置】----------------------【生产环境配置】
+<1>
+spring:
+  profiles: prod
+mysql:
+  ipPort: ip:port
+
+【默认环境配置】----------------------【默认环境配置】
+<1>
+# 默认的profile为dev，其他环境通过指定启动参数使用不同的profile，比如：
+#   测试环境：java -jar my-spring-boot.jar --spring.profiles.active=test
+#   生产环境：java -jar my-spring-boot.jar --spring.profiles.active=prod
+spring:
+  profiles:
+    active: dev
+
+【时间配置】----------------------【时间配置】
+<1>
+spring:
+      jackson:
+            #指定日期格式，比如yyyy-MM-dd HH:mm:ss
+            date-format: yyyy-MM-dd HH:mm:ss
+            #指定日期格式化时区
+            time-zone: GMT+8
+
+【静态资源路径配置】----------------------【静态资源路径配置】
+(SpringBoot项目resources下默认有两个文件夹static和template；一般static存放静态资源,template存放动态资源；main/resources/templates   模板界面；main/resources/static    静态文件；resources     配置文件)
+<1>
+spring:
+  resources:
+    #指定静态资源路径，默认为classpath:[/META-INF/resources/,/resources/, /static/, /public/]以及context:/
+    static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/
+<2>
+spring:
+  mvc:
+    static-path-pattern: /static/**
+<3>
+#静态资源访问路径
+spring.mvc.static-path-pattern=/static/**
+#静态资源映射路径
+spring.resources.static-locations=classpath:/templates/,classpath:/static/
+<4>
+spring:
+  resources:
+    static-locations: classpath:templates/
+  mvc:
+    view:
+      prefix: html/
+      suffix: .html
+<5>
+#首先系统有默认配置,其中默认配置的 /** 映射到 /static （或/public、/resources、/META-INF/resources）
+spring:
+    mvc:
+        static-path-pattern: /**
+    resources:
+         static-locations: classpath:/META-INF/resources/,classpath:/resources/, classpath:/static/, classpath:/public/
+<6>
+#定义 static-path-pattern: /** ，会覆盖默认配置,需要在static-locations添加默认的内部目录和自定义目录
+spring:
+    mvc:
+        static-path-pattern: /uploadPic/**
+    resources:
+        static-locations: classpath:/resources/uploadpic/
+<7>
+#这表示只有静态资源的访问路径为/resources/**时，才会处理请求
+spring.mvc.static-path-pattern=/resources/**
+#它告诉Spring Boot应该在何处查找静态资源文件，这是一个列表性的配置，查找文件时会依赖于配置的先后顺序依次进行
+spring.resources.static-locations=classpath:/static,classpath:/public,classpath:/resources,classpath:/META-INF/resources
+
+【日志配置】----------------------【日志配置】
+<1>
+# 日志配置文件的位置。 例如对于Logback的`classpath：logback.xml`
+logging.config= 
+# ％wEx#记录异常时使用的转换字。
+logging.exception-conversion-word= 
+# 日志文件名。 例如`myapp.log`
+logging.file= 
+# 日志级别严重性映射。 例如`logging.level.org.springframework =  DEBUG`
+logging.level.*= 
+# 日志文件的位置。 例如`/ var / log`
+logging.path= 
+# 用于输出到控制台的Appender模式。 只支持默认的logback设置。
+logging.pattern.console= 
+# 用于输出到文件的Appender模式。 只支持默认的logback设置。
+logging.pattern.file= 
+# 日志级别的Appender模式（默认％5p）。 只支持默认的logback设置。
+logging.pattern.level= 
+#注册日志记录系统的初始化挂钩。
+logging.register-shutdown-hook= false
+
+【国际化（消息源自动配置）】----------------------【国际化（消息源自动配置）】
+<1>
+spring.messages.basename= messages
+# 以逗号分隔的基础名称列表，每个都在ResourceBundle约定之后。
+# 加载的资源束文件缓存到期，以秒为单位。 设置为-1时，软件包将永久缓存。
+spring.messages.cache-seconds= -1
+# 消息编码。
+spring.messages.encoding= UTF-8
+# 设置是否返回到系统区域设置，如果没有找到特定语言环境的文件。
+spring.messages.fallback-to-system-locale= true
+
+【spring缓存ehcache配置】----------------------【spring缓存ehcache配置】
+<1>
+#ehcache配置
+spring:
+  cache:
+    type: ehcache    #指定缓存类型
+    ehcache:
+      config: classpath:ehcache.xml    #ehcache.xml文件位置
+<2>
+# spring 缓存配置
+spring:
+  cache:
+    ehcache:
+      config: classpath:ehcache.xml
+
+
+【 Email (MailProperties)  邮件配置】----------------------【Email (MailProperties)  邮件配置】
+在Spring Boot的工程中的 pom.xml 中引入 spring-boot-starter-mail 依赖：
+<dependency>  
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+</dependency>  
+<1>
+# 默认MimeMessage编码。
+spring.mail.default-encoding= UTF-8
+# SMTP服务器主机。 例如`smtp.example.com`
+spring.mail.host= 
+# 会话JNDI名称。 设置时，优先于其他邮件设置。
+spring.mail.jndi-name= 
+# 登录SMTP服务器的密码。
+spring.mail.password= 
+# SMTP服务器端口。
+spring.mail.port= 
+# 其他JavaMail会话属性。
+spring.mail.properties.*= 
+# SMTP服务器使用的协议。
+spring.mail.protocol= smtp
+# 测试邮件服务器在启动时可用。
+spring.mail.test-connection= false
+# 登录SMTP服务器的用户。
+spring.mail.username= 
+<2>
+spring:
+  mail:
+    host: smtp.qq.com #发送邮件服务器
+    username: xx@qq.com #QQ邮箱
+    password: xxxxxxxxxxx #客户端授权码
+    protocol: smtp #发送邮件协议
+    properties.mail.smtp.auth: true
+    properties.mail.smtp.port: 465 #端口号465或587
+    properties.mail.display.sendmail: aaa #可以任意
+    properties.mail.display.sendname: bbb #可以任意
+    properties.mail.smtp.starttls.enable: true
+    properties.mail.smtp.starttls.required: true
+    properties.mail.smtp.ssl.enable: true #开启SSL
+    default-encoding: utf-8
+<3>
+spring.mail.host=smtp.qq.com  
+spring.mail.username=用户名  //发送方的邮箱
+spring.mail.password=密码  //对于qq邮箱而言 密码指的就是发送方的授权码
+spring.mail.properties.mail.smtp.auth=true  
+spring.mail.properties.mail.smtp.starttls.enable=true  
+spring.mail.properties.mail.smtp.starttls.required=true  
+注意：在
+spring.mail.password
+处的值是需要在邮箱设置里面生成的
+授权码
+，这个不是真实的密码。
+<4>
+spring:
+  mail:
+    # 邮件服务地址
+    host: smtp.163.com
+    # 端口
+    port: 25
+    # 编码格式
+    default-encoding: utf-8
+    # 用户名
+    username: xxx@163.com
+    # 授权码
+    password: xxx
+    # 其它参数
+    properties:
+      mail:
+        smtp:
+          # 如果是用 SSL 方式，需要配置如下属性
+          starttls:
+            enable: true
+            required: true
+
+【文件上传配置】----------------------【文件上传配置】
+<1>
+# 文件上传属性
+# 启用对文件上传的支持。
+multipart.enabled= true
+# 将文件写入磁盘后的阈值。 值可以使用后缀“MB”或“KB”表示兆字节或千字节大小。
+multipart.file-size-threshold= 0
+# 上传文件的位置。
+multipart.location= 
+# 最大文件大小。 值可以使用后缀“MB”或“KB”表示兆字节或千字节大小。
+multipart.max-file-size= 1Mb
+# 最大请求大小。 值可以使用后缀“MB”或“KB”表示兆字节或千字节大小。
+multipart.max-request-size= 10Mb
+
+
+【Sentinel实现限流的server地址配置】----------------------【Sentinel实现限流的server地址配置】
+spring:
+ application:
+   name: baobanserver
+ cloud:
+  sentinel:
+    transport:
+      dashboard: localhost:8080
+#访问sentinel平台页面的端口（如何自己项目设置了默认8080，这个端口不能在设为8080了，设置一个其他的端口号，否则被占用，访问不了sentinel控制台网址）
+    #eager: true
+
+所需依赖（springcloud）：
+  <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <spring-cloud.version>Finchley.SR1</spring-cloud.version>
+    </properties>
+
+    <dependencies>
+        <!--sentinel-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+        </dependency>
+    </dependencies>
+
+  <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>0.2.2.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
+【SSL(https实现)】----------------------【SSL(https实现)】
+<1>
+#https加密端口号 443（默认端口号），可以自己修改
+server.port=8443
+#SSL证书路径 一定要加上classpath:
+server.ssl.key-store=classpath:myssl.key
+#SSL证书密码
+server.ssl.key-store-password=105293
+#证书类型
+server.ssl.key-store-type=JKS
+#或
+#server.ssl.key-store-type=PKCS12
+#证书别名(自己定义)
+server.ssl.key-alias=myssl
+#使工作
+server.ssl.enabled=true
+<2>
+server:
+  port: 8443
+  ssl:
+    #    证书路径
+    key-store: classpath:myssl.key
+    key-store-type: JKS
+    #或
+   #key-store-type: PKCS12
+    key-alias: myssl
+    #    配置密码，就是在生成证书的时候输入的密码
+    key-store-password: 105293
+
+
+
+

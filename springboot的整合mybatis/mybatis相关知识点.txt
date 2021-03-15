@@ -1,0 +1,615 @@
+一、mybatis数据库框架可以使用.xml和sql注解(如@Select、@Update等)来实现Dao层的SQL的操作
+（1）使用.xml方式详解========>>>>>>>>：
+mybatis中使用.xml方式是和我们以前平时使用mybatis数据库框架操作的用法一样。
+【.xml文件开头的命名空间的设置】
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mzl.mybatispagehelperdemo.dao.UserDao">
+  ........
+  ........
+</mapper>
+
+【#########】mybatis的.xml文件常用的各种复杂高级标签的设置和使用如下:【################】
+1. <!-- 配置一个实体类的属性和表的列名相互匹配映射 -->###################################
+<resultMap id="BaseResultMap" type="com.mzl.studentmanagesystem.entity.Course">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="courseDate" column="course_date"/>
+        <result property="selectedNum" column="selected_num"/>
+        <result property="maxNum" column="max_num"/>
+        <result property="info" column="info"/>
+    </resultMap>
+
+2. <!-- 配置sql常用的返回的数据库表列名(而用*号的话会降低查询效率)或者where判断条件的配置-##########
+（1） 
+ <sql id="Base_Column_List">
+        user_id,nick_name,login_name,password_md5,introduce_sign,address,is_deleted,locked_flag,create_time
+   </sql> 
+使用： 
+<select id="selectAll">
+select
+<include refid="Base_Column_List" />
+    from 表名
+</select>
+
+（2）
+<sql id="queryCondition">
+        <where>
+	<if test="id != null and id != ''">
+	           and id = #{id}
+	</if>
+	<if test="title != null and title != ''">
+	          and title = #{title}
+	</if>
+	<if test="content != null and content != ''">
+	          and content = #{content}
+	</if>
+	<if test="imagePath != null and imagePath != ''">
+	          and image_path = #{imagePath}
+	</if>
+	<if test="keywords != null and keywords != ''">
+	         and (name like CONCAT('%', #{keywords},'%') OR username
+	         like CONCAT('%', #{keywords},'%')
+	        OR telephone like CONCAT('%', #{keywords},'%') OR email like
+	        CONCAT('%', #{keywords},'%') )
+	</if>
+        </where>
+    </sql>
+使用：
+<select id="selectAll">
+  select  * from 表名  <include refid="Base_Column_List" />
+</select>
+
+ （在select语句相应位置中，直接使用 <include refid="Base_Column_List" /> 就能导入自己配置的通用列名，where判断条件的配置导入原理也是一样）
+
+3. < 一对一、一对多和多对多的关联查询实现，而多对多关联也使用双向的一对多的关系来实->##############
+【一对一关联，使用association】
+<!--一对一-->
+    <resultMap id="BaseResultMap" type="com.mzl.mybatisdemo1.entity.Student">
+        <id property="id" column="id"/>
+        <result property="departmentId" column="department_id"/>
+        <result property="name" column="name"/>
+        <result property="sex" column="sex"/>
+        <result property="age" column="age"/>
+        <result property="clazz" column="class"/>
+        <result property="phone" column="phone"/>
+        <result property="address" column="address"/>
+        <!--关联子表-->
+     <!-- association ：一对一关联 -->
+     <!-- property:Order对象里面的User实体类属性名 -->
+     <!-- javaType:一个完整的类，是一个JavaBean -->
+        <association property="department" javaType="com.mzl.mybatisdemo1.entity.Department">
+            <id property="id" column="did"/>
+            <result property="departmentName" column="department_name"/>
+            <result property="dean" column="dean"/>
+            <result property="hasYears" column="has_years"/>
+            <result property="location" column="location"/>
+        </association>
+    </resultMap>
+
+<select id="findStuInfo" resultMap="BaseResultMap">
+        select s.*, d.id as did, d.department_name, d.dean, d.has_years, d.location from student s, department d
+        where s.department_id = d.id
+</select>
+
+public class Student {
+
+    private int id;
+    private int departmentId;
+    private String name;
+    private String sex;
+    private int age;
+    private String clazz;
+    private String phone;
+    private String address;
+
+    //一对一
+    private Department department;
+
+}
+
+【一对多关联，使用collection】（参考教程：https://blog.csdn.net/shushan452/article/details/85227942）
+方式一：直接写多表联合查询sql，mapper文件对应好相应的实体类即可。
+需要注意的两个点：
+A.用分页插件pageHelper的时候，该种方式会导致查询错乱。
+B.如果几个表有字段名相同的情况，字段赋值可能被覆盖。我们可以给字段取别名的方式来解决
+<resultMap id="BaseResultMap" type="com.shushan.entity.Teacher">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="age" jdbcType="INTEGER" property="age" />
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <!--一对多，方式一-->
+        <collection property="stuList" ofType="com.shushan.entity.Student" >
+            <id column="stu_id" jdbcType="INTEGER" property="id" />
+            <result column="stu_ter_id" jdbcType="INTEGER" property="terId" />
+            <result column="stu_name" jdbcType="VARCHAR" property="name" />
+            <result column="stu_phone" jdbcType="VARCHAR" property="phone" />
+            <result column="stu_address" jdbcType="VARCHAR" property="address"/>
+            <result column="stu_birthDay" jdbcType="TIMESTAMP" property="birthDay"/>
+        </collection>
+</resultMap>
+
+ <select id="getTeacherList" parameterType="com.shushan.entity.Teacher"
+            resultMap="BaseResultMap">
+            select tea.id, tea.name, tea.age, tea.address,
+                    stu.id stu_id, stu.ter_id stu_ter_id, 
+                    stu.name stu_name, stu.phone stu_phone,
+                    stu.address stu_address, stu.birthday stu_birthday
+                    from teacher tea, student stu where tea.id = stu.ter_id
+            <if test="id != null">
+                and tea.id = #{id}
+            </if>
+    </select>
+
+public class Teacher {
+    private Integer id;
+    private String name;    //姓名
+    private Integer age;   //年龄
+    private String address; //地址
+    private List<Student> stuList; //学生集合
+    setter方法...
+    getter方法...
+}
+
+方式二：
+采用子查询的方式。mapper.xml中对应好主表跟次表查询关系
+<resultMap id="BaseResultMapTwo" type="com.shushan.entity.Teacher">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="age" jdbcType="INTEGER" property="age" />
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <!--一对多，方式一-->
+        <collection property="stuList"
+                    column="{id=id}"
+                    ofType="com.shushan.entity.Teacher"
+                    javaType="ArrayList"
+                    select="com.shushan.dao.UserMultipleTwoDao.getStudent" />
+     </resultMap>
+
+     <resultMap id="StudentMap" type="com.shushan.entity.Student">
+        <id column="stu_id" jdbcType="INTEGER" property="id" />
+        <result column="ter_id" jdbcType="INTEGER" property="terId" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="phone" jdbcType="VARCHAR" property="phone" />
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <result column="birthDay" jdbcType="TIMESTAMP" property="birthDay"/>
+     </resultMap>
+
+     <!--方式二-->
+     <select id="getTeacherTwoList" parameterType="com.shushan.entity.Teacher"
+            resultMap="BaseResultMapTwo">
+        select id, name, age, address from teacher where 1=1
+        <if test="id != null">
+            and id = #{id}
+        </if>
+    </select>
+
+    <select id="getStudent" resultMap="StudentMap" parameterType="java.util.Map" >
+        select id, ter_id, name, phone, address, birthday
+            from student
+        where 1=1
+            and ter_id = #{id}
+    </select>
+
+public class Teacher {
+    private Integer id;
+    private String name;    //姓名
+    private Integer age;   //年龄
+    private String address; //地址
+    private List<Student> stuList; //学生集合
+    setter方法...
+    getter方法...
+}
+
+【多对多关联，与一对多类似，只是双向的一对多而已，使用collection】
+（参考教程：https://blog.csdn.net/dwenxue/article/details/82108178  或    https://www.cnblogs.com/longlyseul/p/11257796.html）
+<resultMap type="com.po.Classes" id="ClassesWithTeacherResult">
+       <id property="cid" column="cid"/>
+       <result property="cname" column="cname"/> 
+      <!-- 多表关联映射 -->
+     <collection property="teachers" ofType="com.po.Teacher">
+	<id property="tid" column="tid"/>
+	<result property="tname" column="tname"/>
+     </collection>
+</resultMap>
+
+<select id="findClassesWithTeacher" parameterType="Integer" resultMap="ClassesWithTeacherResult">
+	select * from t_classes c,t_teacher t,t_classessTeacher ct
+	where ct.cid=c.cid
+	and ct.tid=t.tid
+	and c.cid=#{cid}
+</select>
+
+public class Classes {
+	private Integer cid;
+	private String cname;
+	private List<Teacher> teachers;
+	.....
+                .....
+}
+
+public class Teacher {
+	private Integer tid;
+	private String tname;
+	private List<Classes> classes;
+	......
+                ......
+}
+
+【级联问题】
+在数据库中包含着一对多、一对一的关系。比如说一个人和他的身份证就是一对一的关系，但是他和他的银行卡就是一对多的关系。我们的生活中存在着很多这样的场景。我们也希望在获取这个人的信息的同时也可以把他的身份证信息一同查出，这样的情况我们就要使用级联。在级联中存在3种对应关系。 
+- 一对一的关系 （association）
+- 一对多的关系 （collection）
+- 多对多的关系（这种情况由于比较复杂，我们通常会使用双向一对多的关系来降低复杂度，collection）
+【resultMap中属性配置细节】
+属性	                     描述
+property	           需要映射到JavaBean 的属性名称。
+column	           数据表的列名或者标签别名。
+javaType	           一个完整的类名，或者是一个类型别名。如果你匹配的是一个JavaBean，那MyBatis 通常会自行检测到。然后，如果你是要映射到一个HashMap，那你需要指定javaType 要达到的目的。
+jdbcType	          数据表支持的类型列表。这个属性只在insert,update 或delete 的时候针对允许空的列有用。JDBC 需要这项，但MyBatis 不需要。如果你是直接针对JDBC 编码，且有允许空的列，而你要指定这项。
+typeHandler      使用这个属性可以覆写类型处理器。这项值可以是一个完整的类名，也可以是一个类型别名。
+
+4. <!--mybatis中使用for循环遍历（foreach），传过来的参数是个list，数组和map-####################
+    <delete id="deleteCourse">
+        delete from s_course
+        <where>
+            id in
+            <foreach collection="list" item="id" separator="," open="(" close=")">
+                #{id}
+            </foreach>
+        </where>
+    </delete>
+（相当于sql语句： delete from s_course where id in (1, 2, 4, 7） )
+【说明】
+foreach的主要用在构建in条件中，它可以在SQL语句中进行迭代一个集合。
+foreach元素的属性主要有 item，index，collection，open，separator，close。
+item集合中每一个元素进行迭代时的别名，
+index表示在迭代过程中，每次迭代到的位置，
+open该语句以什么开始，
+separator在每次进行迭代之间以什么符号作为分隔 符，
+close以什么结束，
+在使用foreach的时候最关键的也是最容易出错的就是collection属性，
+该属性是必须指定的，但是在不同情况 下，该属性的值是不一样的，
+主要有一下3种情况：
+a.     如果传入的是单参数且参数类型是一个List的时候，collection属性值为list
+b.     如果传入的是单参数且参数类型是一个array数组的时候，collection的属性值为array
+c.     如果传入的参数是多个的时候，我们就需要把它们封装成一个Map了
+
+5. <!--like模糊查询的实现，使用#、$和concat()三种方式-->#####################################
+ <select id="selectUser" resultMap="BaseResultMap">
+    SELECT * FROM dfws_sys_user_account AS acc
+    WHERE  acc.user_name like '%${userName}%'
+  </select>
+
+<select id="selectUser" resultMap="BaseResultMap">
+    SELECT * FROM dfws_sys_user_account AS acc
+    WHERE  acc.user_name like CONCAT('%', #{userName},'%') 
+  </select>
+
+<select id="selectUser" resultMap="BaseResultMap">
+    SELECT * FROM dfws_sys_user_account AS acc
+    WHERE  acc.user_name like "%"#{userName}"%"
+  </select>
+【说明: #与$的区别】
+1. #将传入的数据都当成一个字符串，会对自动传入的数据加一个双引号。如：order by #user_id#，如果传入的值是111,那么解析成sql时的值为order by "111", 如果传入的值是id，则解析成的sql为order by "id".　　
+2. $将传入的数据直接显示生成在sql中。如：order by $user_id$，如果传入的值是111,那么解析成sql时的值为order by user_id,  如果传入的值是id，则解析成的sql为order by id.　
+3. #方式能够很大程度防止sql注入。　
+4.$方式无法防止Sql注入。
+5.$方式一般用于传入数据库对象，例如传入表名.　
+6.一般能用#的就别用$.
+7.#{} 这种取值是编译好SQL语句再取值，${} 这种是取值以后再去编译SQL语句
+8.MyBatis排序时使用order by 动态参数时需要注意，用$而不是#
+9.们经常使用的是#{},一般解说是因为这种方式可以防止SQL注入，简单的说#{}这种方式SQL语句是经过预编译的，它是把#{}中间的参数转义成字符串，举个例子：
+select * from student where student_name = #{name} 
+预编译后,会动态解析成一个参数标记符?：
+select * from student where student_name = ?
+而使用${}在动态解析时候，会传入参数字符串
+select * from student where student_name = 'lyrics'
+10.字符串替换，默认情况下，使用#{}格式的语法会导致MyBatis创建预处理语句属性并以它为背景设置安全的值（比如?）。这样做很安全，很迅速也是首选做法，有时你只是想直接在SQL语句中插入一个不改变的字符串。比如，像ORDER BY，你可以这样来使用：ORDER BY ${columnName}，这里MyBatis不会修改或转义字符串。
+11.重要：接受从用户输出的内容并提供给语句中不变的字符串，这样做是不安全的。这会导致潜在的SQL注入攻击，因此你不应该允许用户输入这些字段，或者通常自行转义并检查。
+
+6. <!--trim标签的使用-->######################################
+（trim标记是一个格式化的标记，可以完成set或者是where标记的功能，一般用于去除sql语句中多余的and关键字，逗号，或者给sql语句前拼接 “where“、“set“以及“values(“ 等前缀，或者添加“)“等后缀，可用于选择性插入、更新、删除或者条件查询等操作。）
+例子1：查询的where
+SELECT * FROM BLOG
+<trim prefix="WHERE" prefixOverrides="AND">
+	<if test="state != null">
+	  AND state = #{state}
+	</if> 
+	<if test="title != null">
+	  AND title like #{title}
+	</if>
+</trim>
+假如说name和gender的值都不为null的话：如果不设置 prefixOverrides="AND"  打印的SQL为：select * from BLOG where and state = 'xx' and title like 'xx'  在where后面多了一个and；如果设置 prefixOverrides="AND"  打印的SQL为：select * from BLOG where state = 'xx' and title like 'xx'  在where后面不存在and了，被去除掉了。      上面两个属性的意思如下：
+prefix：前缀　　　　　　
+prefixoverride：去掉第一个and或者or
+《==等价于==》
+(这里的where 元素只会在至少有一个子元素的条件返回 SQL 子句的情况下才去插入“WHERE”子句。<where>还会自动去除开头多余的and或者or)
+<select id="findActiveBlogLike" resultType="Blog">
+  SELECT * FROM BLOG 
+  <where> 
+    <if test="state != null">
+      AND state = #{state}
+    </if> 
+    <if test="title != null">
+        AND title like #{title}
+    </if>
+  </where>
+</select>
+
+例子2：更新记录的set
+<update>
+       update user
+　　<trim prefix="set" suffixoverride="," suffix=" where id = #{id} ">
+　　　　<if test="name != null and name.length()>0"> 
+                  name=#{name} , 
+             </if>
+　　　　<if test="gender != null and gender.length()>0"> 
+                      gender=#{gender} ,  
+             </if>
+　　</trim>
+</update>
+ ///或///
+<update>
+     update user
+　　<trim prefix="set" suffixoverride=",">
+　　　　<if test="name != null and name.length()>0"> 
+                  name=#{name} , 
+             </if>
+　　　　<if test="gender != null and gender.length()>0"> 
+                      gender=#{gender} ,  
+             </if>
+　　</trim>
+      where id = #{id}
+</update>
+假如说name和gender的值都不为null的话：如果不设置suffixoverride=","   打印的SQL为：update user set name='xx' , gender='xx' ,  where id='x'   在gender='xx'后面多了一个逗号出错；如果设置suffixoverride="," 打印的SQL为：update user set name='xx' , gender='xx' where id='x'  在gender='xx'后面不存在逗号了，被去除掉了。而且最后自动加了一个set前缀和where后缀，上面三个属性的意义如下，其中prefix意义如下：
+suffixoverride：去掉最后一个逗号（也可以是其他的标记，就像是上面前缀中的and一样）
+suffix：后缀
+《==等价于==》
+(这里的set元素只会在至少有一个子元素的条件返回 SQL 子句的情况下才去插入“set”子句。<set>还会自动去除后面多余的逗号)
+update user
+<set>
+     <if test="name != null and name.length()>0"> 
+            name=#{name} , 
+      </if>
+　　<if test="gender != null and gender.length()>0">
+           gender=#{gender} , 
+      </if>
+</set>
+【trim标签说明】
+1、trim 有四个属性 
+属性	描述
+prefix	给sql语句拼接的前缀
+suffix	给sql语句拼接的后缀
+prefixOverrides	去除sql语句前面的关键字或者字符，该关键字或者字符由prefixOverrides属性指定，假设该属性指定为"AND"，当sql语句的开头为"AND"，trim标签将会去除该"AND"
+suffixOverrides	去除sql语句后面的关键字或者字符，该关键字或者字符由suffixOverrides属性指定
+2、prefix，suffix 表示在trim标签包裹的部分的前面或者后面 添加内容（ 注意：是没有prefixOverrides，suffixOverrides的情况下） 
+3、如果有prefixOverrides，suffixOverrides 表示**覆盖**Overrides中的内容。 
+4、如果只有prefixOverrides，suffixOverrides 表示删除。
+
+7. <!--where标签的使用（动态SQL）-->######################################
+<select id="findActiveBlogLike"
+     resultType="Blog">
+  SELECT * FROM BLOG 
+  <where> 
+    <if test="state != null">
+         state = #{state}
+    </if> 
+    <if test="title != null">
+        AND title like #{title}
+    </if>
+    <if test="author != null and author.name != null">
+        AND author_name like #{author.name}
+    </if>
+  </where>
+</select>
+1、where 元素知道只有在一个以上的if条件有值的情况下才去插入“WHERE”子句。而且，若最后的内容是“AND”或“OR”开头的，where 元素也知道如何将他们去除。(如果 where 元素没有按正常套路出牌，我们还是可以通过自定义 trim 标签元素来定制我们想要的功能。比如，和 where 元素等价的自定义 trim 元素为：<trim prefix="WHERE" prefixOverrides="AND |OR "> ... </trim> )
+2、如果没有用<where>标签，直接使用Where关键字子句，则无法处理开头的and、or和where子句是否需要插入的问题。
+例子1：(多了个WHERE)
+SELECT * FROM BLOG
+WHERE
+例子2：（条件开头，即WHERE多了个AND）
+SELECT * FROM BLOG
+WHERE 
+AND title like ‘yiibai.com’
+
+8. <!--set标签的使用（动态SQL）-->######################################
+<update id="updateByPrimaryKeySelective" parameterType="RecruitmentConfBanner">
+        UPDATE conf_banner t
+        <set> 
+            <if test="bannerName != null">
+                t.banner_name = #{bannerName},
+            </if>
+            <if test="bannerUrl != null">
+                t.banner_url = #{bannerUrl},
+            </if>
+        </set>
+        where t.banner_id = #{bannerId}
+    </update>
+1、<set>标签就是自动去除最后一个更新字段语句中出现的,[逗号]后缀；只有在一个以上的if条件有值的情况下才去插入“SET”子句。（与<where>标签功能相似）
+2、如果没有用<set>标签，直接使用set关键字子句，则无法处理最后一个逗号和set子句是否需要插入的问题。
+例子1：(开头多了个set)
+upate student set
+例子2：（结尾最后多了个逗号，）
+update student set id = #{id}, age = #{age} , 
+
+（参考教程：https://www.cnblogs.com/qiankun-site/p/5758924.html  或   https://blog.csdn.net/wt_better/article/details/80992014）
+
+
+
+
+（2）使用SQL注解方式详解========>>>>>>>>：
+【注意：虽然使用了SQL，但是也要创建对应.xml文件，并把.mxl文件存放的路径在配置文件中加上(和使用.xml方式一样配置)，因为在启动程序编译时，系统的mybatis框架会自动找寻@Mapper对应的.xml的资源路径，如果系统找不到就会报错，只需配置好，可以在里面不写任何的标签方法，在dao层使用SQL注解操作数据库即可】
+mybatis中使用SQL注解方式，我们要熟悉各种注解的意思和如何使用。
+
+mybatis简单注解介绍：
+@Insert ： 插入sql , 和xml insert sql语法完全一样
+@Select ： 查询sql, 和xml select sql语法完全一样
+@Update ： 更新sql, 和xml update sql语法完全一样
+@Delete ： 删除sql, 和xml delete sql语法完全一样
+@Param ： 入参
+@Result： 设置结果集合，列名和属性映射，只能设置一个列-属性映射
+(注意: mybatis如果已经开启了下划线驼峰式命名，不设置@Result的属性则会默认使用同名映射或者下划线驼峰式映射)
+@Results ： 设置结果集合，多个列名和属性映射， 里面可以多个@Result，是一个数组注解来的，所以用{ }
+@ResultMap ： 引用结果集合
+@SelectKey ： 获取最新插入id
+
+例子：
+##删除##：
+@Delete("delete from t_emp where emp_id=#{empId}")
+int deleteByPrimaryKey(@Param("empId") Integer empId);
+##更新##：
+@Update("update t_emp" +
+        "    set emp_name = #{empName,jdbcType=VARCHAR}," +
+        "      emp_tel = #{empTel,jdbcType=VARCHAR}," +
+        "      emp_education = #{empEducation,jdbcType=VARCHAR}," +
+        "      emp_birthday = #{empBirthday,jdbcType=DATE}," +
+        "      fk_dept_id = #{fkDeptId,jdbcType=INTEGER}" +
+        "    where emp_id = #{empId,jdbcType=INTEGER}")
+int update(Employee record);
+##添加##
+@Insert("insert into t_emp (emp_id, emp_name, emp_tel, " +
+        "      emp_education, emp_birthday, fk_dept_id" +
+        "      )" +
+        "    values (#{empId}, #{empName}, #{empTel}, " +
+        "      #{empEducation}, #{empBirthday}, #{fkDeptId}" +
+        "      )")
+@SelectKey(before = false,keyColumn = "emp_id",keyProperty = "empId",
+        statement = "select last_insert_id()",resultType = Integer.class)
+int insert(Employee record);
+##查询##
+@Select("select * from t_emp where emp_id=#{empId}")
+@ResultMap(value="empMap")
+Employee getById(@Param("empId") Integer empId);
+
+【一对一、一对多(多对多)关联查询】
+（ps: 关联的实体类设计与.xml方式一样）
+###one to one (一对一,@One)##########
+	@Select("select * from user where userId = #{userId}")
+	@Results({
+		@Result(id=true,column="userId",property="userId"),
+		@Result(column="userName",property="userName"),
+		@Result(column="userPassword",property="userPassword"),
+		@Result(column="userAge",property="userAge"),
+		@Result(column="userEmail",property="userEmail"),
+//一对一关联,这里的column = "userId"是作为getAddressByUserId方法的实参，自动把column得到的userId的值传给方法的里参数，参数名可以和userId不一样
+		@Result(column="userId",property="userAddress",one=@One(select="com.cr.mapper.AddressMapper.getAddressByUserId",fetchType= FetchType.EAGER))
+})
+	public User getUserById(int userId);
+
+public interface AddressMapper 
+{
+	@Select("select * from address where userId=#{userId}")
+	public Address getAddressByUserId(int userId);
+}
+
+###one to many (一对多,@Many)##########
+	@Select("select * from user where userId=#{userId}")
+	@Results({
+		@Result(id=true,column="userId",property="userId"),
+		@Result(column="userName",property="userName"),
+		@Result(column="userPassword",property="userPassword"),
+		@Result(column="userAge",property="userAge"),
+		@Result(column="userEmail",property="userEmail"),
+		@Result(column="userId",property="books",many=@Many(select="com.cr.mapper.BookMapper.getBooksByUserId",fetchType= FetchType.EAGER))
+	})
+	public User getUserAndBooksById(int userId);
+
+public interface BookMapper 
+{	
+	@Select("select * from book where userId = #{userId}")
+	public List<Book> getBooksByUserId(int userId);
+}
+
+（参考mybatis注解教程：https://blog.csdn.net/u013452337/article/details/100693418   或  https://blog.csdn.net/weixin_43791238/article/details/93527217  或  https://blog.csdn.net/weixin_44003141/article/details/85686694[一对一、一对多(多对多)关联]    或
+https://blog.csdn.net/zhaolulu916/article/details/103594920[一对一、一对多(多对多)关联]   或
+https://www.cnblogs.com/hopeofthevillage/p/11444485.html[一对一、一对多(多对多)关联]   或
+https://blog.csdn.net/qq_42183409/article/details/90750829[一对多或多对多关联]   或  https://blog.csdn.net/qq_36228916/article/details/93872883[一对多或多对多关联]  ）
+
+【注意：最佳实践——SQL注解与.xml结合使用，如果是比较复杂的查询操作(resultMap、多表联合查询等)，可以使用.xml，因为.xml文件配置resultMap，这样方便多个接口调用；如果是简单的(非resultMap、多表查询等复杂的操作), 就可以直接使用sql注解实现即可】
+
+
+二、springboot + mybatis 的懒加载
+1、懒加载是什么？
+延迟加载就是在需要用到数据时才进行加载，不需要用到数据时就不加载数据。延迟加载也称为懒加载。
+你可以理解为按需加载，当我调用到关联的数据时才与数据库交互否则不交互，因为查询单表比关联多张表查询速度要快得多。
+2、好处：先从单表查询，需要时在从关联表去关联查询，大大提高数据库性能，因为查询单表比关联多张表查询速度要快得多。
+3、坏处：因为只有当需要用到数据时，才会进行数据库查询，这样在大批量数据查询时，因为查询工作也要消耗时间，所以可能造成用户等待时间变长，造成用户体验下降。例如在查询学生信息时，要包括学生各科成绩。如果用懒加载，会变成，先查询出所有学生id，然后再拿这些id依次去数据库查询成绩，要与数据库发生很多次连接。但我明明可以用联表查询只和数据库打一次交道。
+4、实现过程
+（1）开启懒加载
+ 【全局懒加载】可以开启全局懒加载，1对1,1对多都适用
+开启全局懒加载，在springboot项目里只需要在yml配置文件里将lazy-loading-enabled的值配置为true（全局懒加载）就可以了。这样就实现了全局懒加载，若个别需要关闭，可在mapper.xml中的特定标签里用fetchType=“eager”来实现。
+（需要注意的是，如果想开启懒加载aggressive-lazy-loading这个值不能设置为true）
+mybatis:
+  configuration:
+    #该值默认就是false，所以可以不配，如果配置成了true，懒加载就会失效
+    aggressive-lazy-loading: false
+    #该属性默认为false，如果配置了true，相当于开启了全局懒加载
+    #当然我们也可以不管该属性，而可在resultMap中的collection(一对多)或association(一对一)标签里通过fetchType="lazy" 来指定某个查询使用局部懒加载
+    lazy-loading-enabled: true
+或
+mybatis.configuration.lazy-loading-enabled=true
+#false 为按需加载
+mybatis.configuration.aggressive-lazy-loading=false
+【局部懒加载】但是也可以不进行配置，因为可以在resultMap中的collection(一对多)或association(一对一)标签里通过fetchType=“lazy” 来指定某个查询使用懒加载（局部懒加载）。
+也可设置局部懒加载，仅针对当前sql语句，如：
+ <resultMap id="studentWithScoreLazyMap" type="Student">
+        <id property="id" column="id"></id>
+        <result property="name" column="name"></result>
+        <result property="age" column="age"></result>
+        <result property="sex" column="sex"></result>
+        <result property="height" column="height"></result>
+        <result property="sAddress" column="s_address"></result>
+      <!--开启局部懒加载 fetchType="lazy"-->
+        <collection property="scoreList" column="id" ofType="Score" select="com.qfedu.dao.IScoreDao.findAllScoreByStudentId" fetchType="lazy">
+        </collection>
+ </resultMap>
+【fetchType="lazy"  默认情况就是懒加载 ，eager 立即加载
+       如果你开启了全局懒加载  又在此配置为 eager 则会覆盖全局的开启的懒加载功能，而是立即加载，即局部大于全局，类似就近原则】
+（2）使用懒加载
+一对多(多对多)懒加载与一对一懒加载类似，主要是一对多使用collection，而一对一使用association而已，这里以一对多举例：
+【ParentDao.xml中】
+  <resultMap id="parentMessageMap" type="com.mzl.mybatisdemo1.entity.parentMessage">
+        <id column="id" property="id"/>
+        <result column="value" property="value" javaType="String"/>
+        <collection  property="childMessages" column="id" select="com.demo.mapper.ChildMDao.findByOtherId"  ofType="com.mzl.mybatisdemo1.entity.ParentMessage">
+
+      </collection>
+  </resultMap>
+
+    <select id="findById" resultMap="parentMessageMap">
+        select * from mk_parentmessage;
+    </select>
+【ChildrenDao.xml中】
+  <select id="findByOtherId" resultType="childMessage">
+        select id, value from mk_childmessage where id = #{id};
+    </select>
+这里与普通的一对多不同，<collection fetchType="eager" property="childMessages" column="id" select="com.demo.mapper.ChildMDao.findByOtherId" ofType="com.mzl.mybatisdemo1.entity.ParentMessage" />中的column是必须写的，这是传递给.findByOtherId接口中的参数，
+select中是全限定类名+方法名，其余与普通的一对多映射相同
+5.使用总结
+（1）开启全局懒加载
+（2）先单表查询，将查询结果放到resultMap，将关联的列对应的值通过column传递到另外的表对应的具体查询方法
+（3）当需要时再去执行对应的方法  懒加载
+（参考教程：https://blog.csdn.net/weixin_43866295/article/details/86566350   或  https://blog.csdn.net/nrsc272420199/article/details/104033603?utm_medium=distribute.pc_relevant.none-task-blog-baidujs_title-2&spm=1001.2101.3001.4242   或   https://blog.csdn.net/SmallCatBaby/article/details/89877091?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.control&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.control  ）
+
+
+三、批量插入操作（参数传list）
+<insert id="insertBatch">
+        insert into sys_user (id, username, password)
+        values
+        <foreach collection="list" separator="," item="item">
+            (#{item.id,jdbcType=VARCHAR}, #{item.username,jdbcType=VARCHAR}, #{item.password,jdbcType=VARCHAR})
+        </foreach>
+    </insert>
+
+
+四、mybatis 插入insert成功后返回主键的方法
+方法1：在<insert>标签里加上 useGeneratedKeys=”true”keyProperty=”id” 即可：
+如：<insert id="insertSelective" parameterType="site.gaoyisheng.pojo.Thesis"
+             useGeneratedKeys="true" keyProperty="id">
+方法2：使用<selectKey>标签：
+如：<selectKey resultType="int" keyProperty="id" order="BEFORE">
+             select currval("自增序列的名称") as id
+</selectKey>
+

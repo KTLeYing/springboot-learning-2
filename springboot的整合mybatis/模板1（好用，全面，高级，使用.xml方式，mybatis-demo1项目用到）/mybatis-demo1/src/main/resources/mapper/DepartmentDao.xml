@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mzl.mybatisdemo1.dao.DepartmentDao">
+
+    <!--列名与属性映射-->
+    <resultMap id="BaseResultMap" type="com.mzl.mybatisdemo1.entity.Department">
+        <id property="id" column="id"/>
+        <result property="departmentName" column="department_name"/>
+        <result property="dean" column="dean"/>
+        <result property="hasYears" column="has_years"/>
+        <result property="location" column="location"/>
+    </resultMap>
+
+    <!--一对多或多对多-->
+    <resultMap id="BaseResultMap1" type="com.mzl.mybatisdemo1.entity.Department">
+        <id property="id" column="id"/>
+        <result property="departmentName" column="department_name"/>
+        <result property="dean" column="dean"/>
+        <result property="hasYears" column="has_years"/>
+        <result property="location" column="location"/>
+        <!--一对多，collection即为list-->
+        <collection property="student" ofType="com.mzl.mybatisdemo1.entity.Student">
+            <id property="id" column="sid"/>
+            <result property="departmentId" column="department_id"/>
+            <result property="name" column="name"/>
+            <result property="sex" column="sex"/>
+            <result property="age" column="age"/>
+            <result property="clazz" column="class"/>
+            <result property="phone" column="phone"/>
+            <result property="address" column="address"/>
+        </collection>
+    </resultMap>
+
+    <!--通用的查询列名(department)-->
+    <sql id="Base_Column_List">
+        id, department_name, dean, has_years, location
+    </sql>
+
+    <!--查询某个学院的所有学生(一对多)-->
+    <select id="findStuInDepartment" resultMap="BaseResultMap1">
+        select d.*, s.id as sid, s.department_id, s.name, s.sex, s.age, s.class, s.phone, s.address from student s, department d
+        where s.department_id = d.id and d.department_name like #{department}
+    </select>
+
+    <!--查询所有学院的所有学生(一对多)-->
+    <select id="findAllStuInDepartment" resultMap="BaseResultMap1">
+        select d.*, s.id as sid, s.department_id, s.name, s.sex, s.age, s.class, s.phone, s.address from student s, department d
+        where s.department_id = d.id
+    </select>
+
+</mapper>
