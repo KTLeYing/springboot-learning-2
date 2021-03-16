@@ -9,7 +9,7 @@ SpringBoot整合框架各种实用的组件技术点，纯属个人技术积累�
 - springboot v2.0.5.RELEASE
 
 ### 各技术点预览目录
-| 组件名称 | 版本号 | 描述 |
+| 组件名称(技术点) | 版本号 | 描述 |
 | ------- | ----- | ---- |
 | SpringBoot-ActiveMQ | ----- | SpringBoot整合ActiveQM消息队列 |
 | SpringBoot-RabbitMQ | ----- | SpringBoot整合RabbitMQ消息队列| 
